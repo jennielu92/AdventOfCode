@@ -170,3 +170,82 @@ IntCode = function(sequence,input = 0){
     }
   }
 }
+
+## Day 6: Universal Orbit Map
+CalculateOrbits = function(solar_system){
+  solar_system$center = sapply(strsplit(solar_system$orbits.V1,")"),"[",1)
+  solar_system$orbiter = sapply(strsplit(solar_system$orbits.V1,")"),"[",2)
+  all_planets = unique(c(solar_system$center,solar_system$orbiter))
+  
+  orbits = 0
+  for(i in 1:length(all_planets)){
+    planet = all_planets[i]
+    while(planet!="COM"){
+      planet = solar_system$center[which(solar_system$orbiter == planet)]
+      orbits = orbits + 1
+    }
+  }
+  return(orbits)
+}
+PathToCOM = function(solar_system,start_star){
+  solar_system$center = sapply(strsplit(solar_system$orbits.V1,")"),"[",1)
+  solar_system$orbiter = sapply(strsplit(solar_system$orbits.V1,")"),"[",2)
+
+  path_to_COM = data.table(path = start_star)
+  planet = start_star
+  while(planet!="COM"){
+    planet = solar_system$center[which(solar_system$orbiter == planet)]
+    path_to_COM = rbind(path_to_COM, data.table(path = planet))
+  }
+  return(path_to_COM)
+}
+SmallestRoute = function(path1, path2){
+  ## reorder
+  path1 = path1[seq(nrow(path1),1),]
+  path2 = path2[seq(nrow(path2),1),]
+  
+  ## ignore where paths converge
+  common_path = 0
+  for(i in 1:nrow(path1)){
+    if(path1$path[i] == path2$path[i]){
+      common_path = common_path + 1
+    }
+  }
+  ## calculate number of movements to get to 
+  ## the place where the paths converge
+  moves = (nrow(path1) - common_path) + (nrow(path2) - common_path)
+  
+  ##adjustment for initial positions of YOU, SAN
+  moves = moves - 2
+  return(moves)
+}
+  
+solar_system = data.table(orbits = read.delim('Day6_inputs.txt', header = FALSE, stringsAsFactors = FALSE))
+CalculateOrbits(solar_system)
+
+## Part 2: smallest orbital distance
+
+YOU = PathToCOM(solar_system,start_star = "YOU")
+SAN = PathToCOM(solar_system,start_star = "SAN")
+
+SmallestRoute(YOU,SAN)
+
+## Day 8: Space Image Format
+require('stringr')
+
+RenderImage = function(input, width, height){
+  image = data.table(contents=c())
+  i = 1
+  while(i <= nchar(as.character(input))){
+    layer = data.table(contents = as.numeric(substr(input, i ,i + (width * height)-1)))
+    image = rbind(image,layer) 
+    i = i + (width * height)
+  }
+  return(image)
+}
+CountOccurences = function(image,countme=0){
+  image[,Occurences:=str_count(as.character(contents),as.character(countme))]
+}
+
+
+space_image = RenderImage(space_image,width = 25, height = 6)
