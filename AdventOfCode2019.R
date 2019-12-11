@@ -140,36 +140,90 @@ min(md$Distance)
 
 ## Day 5: Sunny with a Chance of Asteroids 
 
+sequence <- as.numeric(strsplit(readLines("Day5_inputs.txt"), ",")[[1]])
+
 IntCode = function(sequence,input = 0){
   operation = 1
   while(operation <= length(sequence)){
-    opcode = as.numeric(substr(as.character(sequence[operation]),nchar(sequence[operation])-2,nchar(sequence[operation])))
+    full_opcode = sequence[operation]
+    
+    opcode <- as.character(full_opcode %% 100)
+    
+    ## get number of params for given opcode (https://github.com/mpjdem/adventofcode2019/blob/master/aoc19_day5.R)
+    GetParams = function(opcode){
+      if(opcode == "1"){return (3)}
+      else if(opcode == "2"){return (3)}
+      else if(opcode == "3"){return (1)}
+      else if(opcode == "4"){return (1)}
+      else if(opcode == "5"){return (2)}
+      else if(opcode == "6"){return (2)}
+      else if(opcode == "7"){return (3)}
+      else if(opcode == "8"){return (3)}
+      else if(opcode == "99"){return (0)}
+    }
+    
+    par_modes <- sapply(10 ** (seq_len(GetParams(opcode)) + 1),
+                       function(x) floor(full_opcode / x) %% 10)
+    
+    params = sequence[operation + seq_len(GetParams(opcode))]
+    
+    whichMode <- function(x) {
+      if (par_modes[x] == 1) params[x] else sequence[params[x] + 1]
+    }
+    
     ## op code
-    if(opcode == 1){
-      newval = sequence[sequence[operation+1]+1] + sequence[sequence[operation+2]+1]
-      sequence[sequence[operation+3]+1] = newval
-      operation = 4 + operation
+    if(opcode == "1"){
+      sequence[params[3] + 1] <- whichMode(1) + whichMode(2)
+      operation = operation + GetParams(opcode) + 1
     }
-    else if(opcode == 2){
-      newval = sequence[sequence[operation+1]+1] * sequence[sequence[operation+2]+1]
-      sequence[sequence[operation+3]+1] = newval
-      operation = 4 + operation
+    else if(opcode == "2"){
+      sequence[params[3] + 1] <- whichMode(1) * whichMode(2)
+      operation = operation + GetParams(opcode) + 1
     }
-    else if(opcode == 3){
-      sequence[sequence[operation+1] + 1] = input
-      operation = 2 + operation
+    else if(opcode == "3"){
+      sequence[params[1] + 1] <- input
+      operation = operation + GetParams(opcode) + 1
     }
-    else if(opcode == 4){
+    else if(opcode == "4"){
       ## output value at address sequence[operation+1]
-      print(sequence[sequence[operation+1] + 1])
-      operation = 2 + operation
+      print(cat(whichMode(1), " "))
+      operation = operation + GetParams(opcode) + 1
     }
-    else if(opcode == 99){
+    else if(opcode == "5"){
+      if (whichMode(1) != 0){
+        operation = whichMode(2) + 1
+      }
+      else{
+        operation = operation + GetParams(opcode) + 1
+      }
+    }
+    else if(opcode == "6"){
+
+      if (whichMode(1) == 0){
+        operation = whichMode(2) + 1
+      }
+      else{
+        operation = operation + GetParams(opcode) + 1
+      }
+    }
+    else if(opcode == "7"){
+      sequence[params[3] + 1] <- ifelse(whichMode(1) < whichMode(2),1,0)
+      operation = operation + GetParams(opcode) + 1
+    }
+    else if(opcode == "8"){
+      sequence[params[3] + 1] <- ifelse(whichMode(1) == whichMode(2),1,0)
+      operation = operation + GetParams(opcode) + 1
+    }
+    else if(opcode == "99"){
       #return(sequence[1])
       break
     }
   }
 }
+
+IntCode(sequence, input = 1)
+
+IntCode(sequence, input = 5)
 
 ## Day 6: Universal Orbit Map
 CalculateOrbits = function(solar_system){
@@ -230,22 +284,140 @@ SAN = PathToCOM(solar_system,start_star = "SAN")
 
 SmallestRoute(YOU,SAN)
 
+
+## Day 7: Amplification Circuit
+
+IntCode = function(sequence,input = 0){
+  operation = 1
+  while(operation <= length(sequence)){
+    full_opcode = sequence[operation]
+    
+    opcode <- as.character(full_opcode %% 100)
+    
+    ## get number of params for given opcode (https://github.com/mpjdem/adventofcode2019/blob/master/aoc19_day5.R)
+    GetParams = function(opcode){
+      if(opcode == "1"){return (3)}
+      else if(opcode == "2"){return (3)}
+      else if(opcode == "3"){return (1)}
+      else if(opcode == "4"){return (1)}
+      else if(opcode == "5"){return (2)}
+      else if(opcode == "6"){return (2)}
+      else if(opcode == "7"){return (3)}
+      else if(opcode == "8"){return (3)}
+      else if(opcode == "99"){return (0)}
+    }
+    
+    par_modes <- sapply(10 ** (seq_len(GetParams(opcode)) + 1),
+                        function(x) floor(full_opcode / x) %% 10)
+    
+    params = sequence[operation + seq_len(GetParams(opcode))]
+    
+    whichMode <- function(x) {
+      if (par_modes[x] == 1) params[x] else sequence[params[x] + 1]
+    }
+    
+    ## op code
+    if(opcode == "1"){
+      sequence[params[3] + 1] <- whichMode(1) + whichMode(2)
+      operation = operation + GetParams(opcode) + 1
+    }
+    else if(opcode == "2"){
+      sequence[params[3] + 1] <- whichMode(1) * whichMode(2)
+      operation = operation + GetParams(opcode) + 1
+    }
+    else if(opcode == "3"){
+      sequence[params[1] + 1] <- input
+      operation = operation + GetParams(opcode) + 1
+    }
+    else if(opcode == "4"){
+      ## output value at address sequence[operation+1]
+      print(cat(whichMode(1), " "))
+      operation = operation + GetParams(opcode) + 1
+    }
+    else if(opcode == "5"){
+      if (whichMode(1) != 0){
+        operation = whichMode(2) + 1
+      }
+      else{
+        operation = operation + GetParams(opcode) + 1
+      }
+    }
+    else if(opcode == "6"){
+      
+      if (whichMode(1) == 0){
+        operation = whichMode(2) + 1
+      }
+      else{
+        operation = operation + GetParams(opcode) + 1
+      }
+    }
+    else if(opcode == "7"){
+      sequence[params[3] + 1] <- ifelse(whichMode(1) < whichMode(2),1,0)
+      operation = operation + GetParams(opcode) + 1
+    }
+    else if(opcode == "8"){
+      sequence[params[3] + 1] <- ifelse(whichMode(1) == whichMode(2),1,0)
+      operation = operation + GetParams(opcode) + 1
+    }
+    else if(opcode == "99"){
+      #return(sequence[1])
+      break
+    }
+  }
+}
+
 ## Day 8: Space Image Format
 require('stringr')
+require('data.table')
+
+space_image <- as.numeric(strsplit(readLines("Day8_inputs.txt"), "")[[1]])
 
 RenderImage = function(input, width, height){
   image = data.table(contents=c())
   i = 1
-  while(i <= nchar(as.character(input))){
-    layer = data.table(contents = as.numeric(substr(input, i ,i + (width * height)-1)))
-    image = rbind(image,layer) 
+  while(i <= length(input)){
+    layer = data.table(i=input[i :(i + (width * height)-1)])
+    image = cbind(image,layer) 
     i = i + (width * height)
   }
   return(image)
 }
 CountOccurences = function(image,countme=0){
-  image[,Occurences:=str_count(as.character(contents),as.character(countme))]
+  output = rep(0,each = ncol(image))
+  for(i in 1:ncol(image)){
+    output[i] = sum(str_count(image[[i]],as.character(countme)))
+  }
+  return(output)
+}
+EvaluateImage = function(image,occurences,dig1,dig2){
+  min_occ = min(occurences)
+  for(i in 1:length(occurences)){
+    if(occurences[i] == min_occ){
+      return(sum(str_count(image[[i]],as.character(dig1))) *
+               sum(str_count(image[[i]],as.character(dig2)))) 
+    }
+  }
+}
+CreateImage = function(image, width, height){
+  final_image = data.table(x = rep(seq(from = 1, to = width, length.out =width), times = height),
+                           y = rep(seq(from = height, to = 1, length.out = height), each = width),
+                           color = c(0))
+  for(i in 1:nrow(final_image)){
+    color_here = 2
+    j = 1
+    while(color_here == 2){
+      color_here = image[[j]][i]
+      j = j + 1
+    }
+    final_image$color[i] = color_here
+  }
+  return(final_image)
 }
 
-
 space_image = RenderImage(space_image,width = 25, height = 6)
+zeros = CountOccurences(space_image,countme=0)
+
+EvaluateImage(space_image,zeros,1, 2)
+
+message = CreateImage(space_image,width = 25, height = 6)
+ggplot(message,aes(x = x, y = y, fill = color)) + geom_tile()
