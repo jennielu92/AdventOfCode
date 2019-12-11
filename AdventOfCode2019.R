@@ -417,7 +417,13 @@ CreateImage = function(image, width, height){
 space_image = RenderImage(space_image,width = 25, height = 6)
 zeros = CountOccurences(space_image,countme=0)
 
-EvaluateImage(space_image,zeros,1, 2)
-
 message = CreateImage(space_image,width = 25, height = 6)
-ggplot(message,aes(x = x, y = y, fill = color)) + geom_tile()
+p = ggplot(message,aes(x = x, y = y, fill = color)) +
+  geom_tile() + 
+  labs(x = NULL, y = NULL) + 
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        legend.position = "none") 
+ggsave(p, file = "elf_message.png",height = 4, width = 6)
